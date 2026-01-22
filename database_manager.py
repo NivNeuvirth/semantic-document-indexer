@@ -72,29 +72,31 @@ class DatabaseManager:
         if not chunks:
             return
 
+        conn = self.get_connection()
         try:
-            with self.get_connection() as conn:
-                with conn.cursor() as cur:
-                    # Delete existing chunks with same filename and strategy
-                    delete_query = "DELETE FROM document_chunks WHERE filename = %s AND split_strategy = %s"
-                    cur.execute(delete_query, (filename, strategy))
-                    
-                    insert_query = """
-                    INSERT INTO document_chunks (filename, split_strategy, chunk_text, embedding)
-                    VALUES %s
-                    """
-                    
-                    data = [
-                        (filename, strategy, chunk, embedding)
-                        for chunk, embedding in zip(chunks, embeddings, strict=True)
-                    ]
-                    
-                    execute_values(cur, insert_query, data)
-                    
-                conn.commit()
-                logger.info(f"✅ Saved {len(data)} chunks to database.")
+            with conn.cursor() as cur:
+                delete_query = "DELETE FROM document_chunks WHERE filename = %s AND split_strategy = %s"
+                cur.execute(delete_query, (filename, strategy))
+                
+                insert_query = """
+                INSERT INTO document_chunks (filename, split_strategy, chunk_text, embedding)
+                VALUES %s
+                """
+                
+                data = [
+                    (filename, strategy, chunk, embedding)
+                    for chunk, embedding in zip(chunks, embeddings, strict=True)
+                ]
+                
+                execute_values(cur, insert_query, data)
+                
+            conn.commit()
+            logger.info(f"✅ Saved {len(data)} chunks to database.")
         except Exception as e:
+            conn.rollback()
             logger.exception(f"❌ Insert failed: {e}")
             raise
+        finally:
+            conn.close()
 
 db_manager = DatabaseManager()
