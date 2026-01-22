@@ -1,8 +1,10 @@
 import os
 import logging
+from pathlib import Path
 from document_loader import load_and_clean_document
 from text_splitter import split_by_fixed_size, split_by_sentence, split_by_paragraph
 from embedding_client import embedding_client
+from database_manager import db_manager
 
 logging.basicConfig(
     level=logging.INFO,
@@ -12,7 +14,13 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 def process_document(file_path: str, strategy: str = 'fixed'):
-    logger.info(f"Processing file: {file_path}")
+    logger.info(f"🚀 Processing file: {file_path}")
+
+    try:
+        db_manager.setup_database()
+    except Exception as e:
+        logger.critical(f"🛑 Database setup failed. Stopping process. Error: {e}")
+        return
     
     try:
         text = load_and_clean_document(file_path)
@@ -44,16 +52,35 @@ def process_document(file_path: str, strategy: str = 'fixed'):
         embeddings.append(vector)
         
         if vector:
-            if i == 0:
+            if i == 0: 
                 logger.info(f"✅ Sample Check - Chunk #0 embedded successfully.")
                 logger.info(f"   Vector dimensions: {len(vector)}")
                 logger.info(f"   First 5 values: {vector[:5]}")
         else:
             logger.warning(f"⚠️ Failed to embed chunk #{i} (Result: None)")
 
-    successful_embeddings = [e for e in embeddings if e is not None]
-    logger.info(f"Finished embedding process. Success rate: {len(successful_embeddings)}/{len(chunks)}")
+    valid_chunks = []
+    valid_embeddings = []
     
+    for chunk, vector in zip(chunks, embeddings):
+        if vector is not None:
+            valid_chunks.append(chunk)
+            valid_embeddings.append(vector)
+
+    logger.info(f"Embedding success rate: {len(valid_embeddings)}/{len(chunks)}")
+
+    if valid_embeddings:
+        logger.info(f"💾 Saving {len(valid_embeddings)} records to PostgreSQL (Standard Array Mode)...")
+        file_name = Path(file_path).name
+        
+        try:
+            db_manager.insert_chunks(file_name, strategy, valid_chunks, valid_embeddings)
+            logger.info("✅ DONE! Document successfully indexed in Database.")
+        except Exception as e:
+            logger.error(f"❌ Failed to save to database: {e}")
+    else:
+        logger.warning("⚠️ No valid embeddings generated. Nothing to save to DB.")
+
     output_filename = "debug_chunks.txt"
     try:
         with open(output_filename, "w", encoding="utf-8") as f:
