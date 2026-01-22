@@ -2,6 +2,7 @@ import os
 import logging
 from document_loader import load_and_clean_document
 from text_splitter import split_by_fixed_size, split_by_sentence, split_by_paragraph
+from embedding_client import embedding_client
 
 logging.basicConfig(
     level=logging.INFO,
@@ -33,22 +34,34 @@ def process_document(file_path: str, strategy: str = 'fixed'):
         return
 
     logger.info(f"Generated {len(chunks)} chunks.")
+
+    logger.info("Starting embedding generation...")
+    
+    embeddings = []
+    
+    for i, chunk in enumerate(chunks):
+        vector = embedding_client.get_embedding(chunk)
+        
+        if vector:
+            embeddings.append(vector)
+            if i == 0:
+                logger.info(f"✅ Sample Check - Chunk #1 embedded successfully.")
+                logger.info(f"   Vector dimensions: {len(vector)}")
+                logger.info(f"   First 5 values: {vector[:5]}")
+        else:
+            logger.warning(f"⚠️ Failed to embed chunk #{i}")
+
+    logger.info(f"Finished embedding process. Success rate: {len(embeddings)}/{len(chunks)}")
     
     output_filename = "debug_chunks.txt"
     try:
         with open(output_filename, "w", encoding="utf-8") as f:
-            f.write(f"Source File: {file_path}\n")
-            f.write(f"Strategy: {strategy}\n")
+            f.write(f"Source: {file_path}\nStrategy: {strategy}\n")
             f.write(f"Total Chunks: {len(chunks)}\n")
-            f.write("=" * 40 + "\n\n")
-            
+            f.write("="*40 + "\n\n")
             for i, chunk in enumerate(chunks):
-                f.write(f"--- Chunk {i+1} ---\n")
-                f.write(chunk)
-                f.write("\n\n")
-        
-        logger.info(f"Chunks written to file: {output_filename}")
-        
+                f.write(f"--- Chunk {i+1} ---\n{chunk}\n\n")
+        logger.info(f"Debug output written to {output_filename}")
     except Exception as e:
         logger.error(f"Failed to write debug file: {e}")
 
