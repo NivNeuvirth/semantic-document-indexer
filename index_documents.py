@@ -53,7 +53,7 @@ def process_document(file_path: str, strategy: str = 'fixed'):
         
         if vector:
             if i == 0: 
-                logger.info(f"✅ Sample Check - Chunk #0 embedded successfully.")
+                logger.info("✅ Sample Check - Chunk #0 embedded successfully.")
                 logger.info(f"   Vector dimensions: {len(vector)}")
                 logger.info(f"   First 5 values: {vector[:5]}")
         else:

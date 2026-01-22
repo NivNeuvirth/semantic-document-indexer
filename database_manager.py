@@ -12,12 +12,7 @@ class DatabaseManager:
     def __init__(self):
         self.db_url = os.getenv("POSTGRES_URL")
         if not self.db_url:
-            user = os.getenv("POSTGRES_USER", "postgres")
-            password = os.getenv("POSTGRES_PASSWORD", "")
-            host = os.getenv("POSTGRES_HOST", "localhost")
-            port = os.getenv("POSTGRES_PORT", "5432")
-            dbname = os.getenv("POSTGRES_DB", "vectors_db")
-            self.db_url = f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
+            raise ValueError("❌ Missing Configuration: 'POSTGRES_URL' is not set in the .env file.")
 
     def get_connection(self):
         return psycopg2.connect(self.db_url)
@@ -79,28 +74,29 @@ class DatabaseManager:
 
         self.delete_existing_chunks(filename, strategy)
 
-        conn = self.get_connection()
         try:
-            with conn.cursor() as cur:
-                insert_query = """
-                INSERT INTO document_chunks (filename, split_strategy, chunk_text, embedding)
-                VALUES %s
-                """
-                
-                data = [
-                    (filename, strategy, chunk, embedding)
-                    for chunk, embedding in zip(chunks, embeddings)
-                ]
-                
-                execute_values(cur, insert_query, data)
-                
-            conn.commit()
-            logger.info(f"✅ Saved {len(data)} chunks to database.")
+            with self.get_connection() as conn:
+                with conn.cursor() as cur:
+                    # Delete existing chunks
+                    delete_query = "DELETE FROM document_chunks WHERE filename = %s"
+                    cur.execute(delete_query, (filename,))
+                    
+                    insert_query = """
+                    INSERT INTO document_chunks (filename, split_strategy, chunk_text, embedding)
+                    VALUES %s
+                    """
+                    
+                    data = [
+                        (filename, strategy, chunk, embedding)
+                        for chunk, embedding in zip(chunks, embeddings)
+                    ]
+                    
+                    execute_values(cur, insert_query, data)
+                    
+                conn.commit()
+                logger.info(f"✅ Saved {len(data)} chunks to database.")
         except Exception as e:
-            conn.rollback()
             logger.error(f"❌ Insert failed: {e}")
             raise e
-        finally:
-            conn.close()
 
 db_manager = DatabaseManager()
