@@ -58,16 +58,18 @@ def split_by_sentence(text: str, max_chars: int = DEFAULT_CHUNK_SIZE) -> List[st
     chunks = []
     current_chunk = []
     current_len = 0
+    sep_len = 1 
     for sentence in sentences:
         sentence_len = len(sentence)
-        if current_len + sentence_len > max_chars:
+        extra = sep_len if current_chunk else 0
+        if current_len + sentence_len + extra > max_chars:
             if current_chunk:
                 chunks.append(" ".join(current_chunk))
             current_chunk = [sentence]
             current_len = sentence_len
         else:
             current_chunk.append(sentence)
-            current_len += sentence_len + 1
+            current_len += sentence_len + extra
     if current_chunk:
         chunks.append(" ".join(current_chunk))
     return chunks
@@ -83,16 +85,18 @@ def split_by_paragraph(text: str, max_chars: int = DEFAULT_CHUNK_SIZE) -> List[s
     chunks = []
     current_chunk = []
     current_len = 0
+    sep_len = 1 
     for para in paragraphs:
         para_len = len(para)
-        if current_len + para_len > max_chars:
+        extra = sep_len if current_chunk else 0
+        if current_len + para_len + extra > max_chars:
             if current_chunk:
                 chunks.append("\n".join(current_chunk))
             current_chunk = [para]
             current_len = para_len
         else:
             current_chunk.append(para)
-            current_len += para_len + 1
+            current_len += para_len + extra
     if current_chunk:
         chunks.append("\n".join(current_chunk))
     return chunks
