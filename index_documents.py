@@ -41,17 +41,18 @@ def process_document(file_path: str, strategy: str = 'fixed'):
     
     for i, chunk in enumerate(chunks):
         vector = embedding_client.get_embedding(chunk)
+        embeddings.append(vector)
         
         if vector:
-            embeddings.append(vector)
             if i == 0:
-                logger.info(f"✅ Sample Check - Chunk #1 embedded successfully.")
+                logger.info(f"✅ Sample Check - Chunk #0 embedded successfully.")
                 logger.info(f"   Vector dimensions: {len(vector)}")
                 logger.info(f"   First 5 values: {vector[:5]}")
         else:
-            logger.warning(f"⚠️ Failed to embed chunk #{i}")
+            logger.warning(f"⚠️ Failed to embed chunk #{i} (Result: None)")
 
-    logger.info(f"Finished embedding process. Success rate: {len(embeddings)}/{len(chunks)}")
+    successful_embeddings = [e for e in embeddings if e is not None]
+    logger.info(f"Finished embedding process. Success rate: {len(successful_embeddings)}/{len(chunks)}")
     
     output_filename = "debug_chunks.txt"
     try:
@@ -64,6 +65,8 @@ def process_document(file_path: str, strategy: str = 'fixed'):
         logger.info(f"Debug output written to {output_filename}")
     except Exception as e:
         logger.error(f"Failed to write debug file: {e}")
+
+    return embeddings
 
 if __name__ == "__main__":
     test_file = "sample.docx" 
