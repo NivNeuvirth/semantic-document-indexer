@@ -72,14 +72,12 @@ class DatabaseManager:
         if not chunks:
             return
 
-        self.delete_existing_chunks(filename, strategy)
-
         try:
             with self.get_connection() as conn:
                 with conn.cursor() as cur:
-                    # Delete existing chunks
-                    delete_query = "DELETE FROM document_chunks WHERE filename = %s"
-                    cur.execute(delete_query, (filename,))
+                    # Delete existing chunks with same filename and strategy
+                    delete_query = "DELETE FROM document_chunks WHERE filename = %s AND split_strategy = %s"
+                    cur.execute(delete_query, (filename, strategy))
                     
                     insert_query = """
                     INSERT INTO document_chunks (filename, split_strategy, chunk_text, embedding)
@@ -88,7 +86,7 @@ class DatabaseManager:
                     
                     data = [
                         (filename, strategy, chunk, embedding)
-                        for chunk, embedding in zip(chunks, embeddings)
+                        for chunk, embedding in zip(chunks, embeddings, strict=True)
                     ]
                     
                     execute_values(cur, insert_query, data)
@@ -96,7 +94,7 @@ class DatabaseManager:
                 conn.commit()
                 logger.info(f"✅ Saved {len(data)} chunks to database.")
         except Exception as e:
-            logger.error(f"❌ Insert failed: {e}")
-            raise e
+            logger.exception(f"❌ Insert failed: {e}")
+            raise
 
 db_manager = DatabaseManager()
