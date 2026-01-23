@@ -1,7 +1,7 @@
 import pytest
 import psycopg2
 from unittest.mock import MagicMock, patch, call
-from database_manager import DatabaseManager
+from src.database_manager import DatabaseManager
 import os
 
 """
@@ -24,7 +24,7 @@ def test_init_raises_without_url():
 @pytest.mark.usefixtures("mock_db_env")
 def test_get_connection():
     """Checks that get_connection calls psycopg2.connect with the correct URL."""
-    with patch("database_manager.psycopg2.connect") as mock_connect:
+    with patch("src.database_manager.psycopg2.connect") as mock_connect:
         db = DatabaseManager()
         db.get_connection()
         mock_connect.assert_called_once_with("postgresql://user:pass@localhost/db")
@@ -32,7 +32,7 @@ def test_get_connection():
 @pytest.mark.usefixtures("mock_db_env")
 def test_setup_database():
     """Ensures setup_database executes the expected table creation SQL."""
-    with patch("database_manager.psycopg2.connect") as mock_connect:
+    with patch("src.database_manager.psycopg2.connect") as mock_connect:
         mock_conn = mock_connect.return_value
         mock_cur = mock_conn.cursor.return_value.__enter__.return_value
         
@@ -50,7 +50,7 @@ def test_setup_database():
 @pytest.mark.usefixtures("mock_db_env")
 def test_delete_existing_chunks():
     """Verifies that delete_existing_chunks executes the correct DELETE SQL command."""
-    with patch("database_manager.psycopg2.connect") as mock_connect:
+    with patch("src.database_manager.psycopg2.connect") as mock_connect:
         mock_conn = mock_connect.return_value
         mock_cur = mock_conn.cursor.return_value.__enter__.return_value
         mock_cur.rowcount = 5
@@ -67,11 +67,11 @@ def test_delete_existing_chunks():
 @pytest.mark.usefixtures("mock_db_env")
 def test_insert_chunks():
     """Tests that insert_chunks performs a delete followed by a bulk insert."""
-    with patch("database_manager.psycopg2.connect") as mock_connect:
+    with patch("src.database_manager.psycopg2.connect") as mock_connect:
         mock_conn = mock_connect.return_value
         
         # We need to mock execute_values since it's imported from psycopg2.extras
-        with patch("database_manager.execute_values") as mock_execute_values:
+        with patch("src.database_manager.execute_values") as mock_execute_values:
             db = DatabaseManager()
             chunks = ["chunk1", "chunk2"]
             embeddings = [[0.1], [0.2]]

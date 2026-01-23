@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from text_splitter import split_by_fixed_size, split_by_sentence, split_by_paragraph
+from src.text_splitter import split_by_fixed_size, split_by_sentence, split_by_paragraph
 
 """
 Unit tests for text_splitter module, covering fixed-size, sentence-based, and
@@ -42,8 +42,8 @@ def test_fixed_size_smaller_than_chunk():
 def test_sentence_split_basic():
     """Tests basic sentence splitting logic using a mock tokenizer."""
     text = "Hello world. This is a test."
-    with patch("text_splitter._ensure_punkt"), \
-         patch("text_splitter.nltk.sent_tokenize") as mock_tokenize:
+    with patch("src.text_splitter._ensure_punkt"), \
+         patch("src.text_splitter.nltk.sent_tokenize") as mock_tokenize:
         
         mock_tokenize.return_value = ["Hello world.", "This is a test."]
         
@@ -57,8 +57,8 @@ def test_sentence_split_max_chars():
     exceeds max_chars.
     """
     text = "S1. S2. S3."
-    with patch("text_splitter._ensure_punkt"), \
-         patch("text_splitter.nltk.sent_tokenize") as mock_tokenize:
+    with patch("src.text_splitter._ensure_punkt"), \
+         patch("src.text_splitter.nltk.sent_tokenize") as mock_tokenize:
          
         # Mock behavior: return 3 sentences
         mock_tokenize.return_value = ["S1.", "S2.", "S3."]

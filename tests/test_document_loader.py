@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import MagicMock, patch
 from pathlib import Path
-from document_loader import load_and_clean_document
+from src.document_loader import load_and_clean_document
 
 """
 Unit tests for the document_loader module, verifying PDF/DOCX extraction
@@ -18,7 +18,7 @@ def mock_path_exists():
 @pytest.mark.usefixtures("mock_path_exists")
 def test_load_and_clean_pdf():
     """Tests successful extraction and cleaning of text from a PDF file."""
-    with patch("document_loader.PdfReader") as MockPdfReader:
+    with patch("src.document_loader.PdfReader") as MockPdfReader:
         # Setup mock behavior
         mock_reader = MockPdfReader.return_value
         page1 = MagicMock()
@@ -36,7 +36,7 @@ def test_load_and_clean_pdf():
 @pytest.mark.usefixtures("mock_path_exists")
 def test_load_and_clean_docx():
     """Tests successful extraction and cleaning of text from a DOCX file."""
-    with patch("document_loader.Document") as MockDocument:
+    with patch("src.document_loader.Document") as MockDocument:
         # Setup mock behavior
         mock_doc = MockDocument.return_value
         p1 = MagicMock()
@@ -67,7 +67,7 @@ def test_unsupported_format():
 def test_empty_parsed_content():
     """Ensures RuntimeError is raised if the document parser returns None."""
     # Case where file exists and is valid format, but extraction returns nothing
-    with patch("document_loader._extract_from_pdf") as mock_extract:
+    with patch("src.document_loader._extract_from_pdf") as mock_extract:
         mock_extract.return_value = None
         with pytest.raises(RuntimeError, match="Failed to extract text"):
             load_and_clean_document("empty.pdf")
