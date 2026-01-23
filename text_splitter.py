@@ -10,6 +10,11 @@ logger = logging.getLogger(__name__)
 
 
 def _ensure_punkt():
+    """
+    Ensures that the NLTK 'punkt' tokenizer data is downloaded.
+
+    Checks if 'tokenizers/punkt' is available; if not, attempts to download it.
+    """
     try:
         nltk.data.find('tokenizers/punkt')
     except LookupError:
@@ -23,7 +28,18 @@ def _ensure_punkt():
 
 def split_by_fixed_size(text: str, chunk_size: int = DEFAULT_CHUNK_SIZE, overlap: int = DEFAULT_OVERLAP) -> List[str]:
     """
-    Splits text into fixed-size chunks with overlap.
+    Splits text into fixed-size character chunks with specified overlap.
+
+    Args:
+        text (str): The input text to split.
+        chunk_size (int): The maximum size of each chunk in characters.
+        overlap (int): The number of characters of overlap between consecutive chunks.
+
+    Returns:
+        List[str]: A list of text chunks.
+
+    Raises:
+        ValueError: If `overlap` is greater than or equal to `chunk_size`.
     """
     if not text:
         return []
@@ -43,7 +59,18 @@ def split_by_fixed_size(text: str, chunk_size: int = DEFAULT_CHUNK_SIZE, overlap
 
 def split_by_sentence(text: str, max_chars: int = DEFAULT_CHUNK_SIZE) -> List[str]:
     """
-    Splits text by sentences using NLTK, ensuring chunks don't exceed max_chars.
+    Splits text by sentences using NLTK, ensuring chunks don't exceed a maximum character length.
+
+    This strategy tries to keep sentences together. If a single sentence exceeds `max_chars`,
+    it may still be included (depending on implementation specifics) or force a split.
+    Fallbacks to fixed-size splitting if NLTK fails.
+
+    Args:
+        text (str): The input text to split.
+        max_chars (int): The target maximum number of characters per chunk.
+
+    Returns:
+        List[str]: A list of text chunks.
     """
     if not text:
         return []
@@ -76,7 +103,14 @@ def split_by_sentence(text: str, max_chars: int = DEFAULT_CHUNK_SIZE) -> List[st
 
 def split_by_paragraph(text: str, max_chars: int = DEFAULT_CHUNK_SIZE) -> List[str]:
     """
-    Splits text by double newlines (paragraphs).
+    Splits text by double newlines (paragraphs), ensuring chunks don't exceed a maximum character length.
+
+    Args:
+        text (str): The input text to split.
+        max_chars (int): The target maximum number of characters per chunk.
+
+    Returns:
+        List[str]: A list of text chunks.
     """
     if not text:
         return []

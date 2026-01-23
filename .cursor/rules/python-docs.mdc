@@ -1,0 +1,8 @@
+---
+description: Python Documentation Standards
+globs: *.py
+---
+# Python Documentation Standards
+
+- Always include PEP 257 compliant docstrings for all modules, classes, and functions.
+- Ensure documentation covers parameters, return values, and exceptions.

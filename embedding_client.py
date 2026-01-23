@@ -11,6 +11,15 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 class EmbeddingClient:
+    """
+    Client for interacting with Google's GenAI embedding models.
+
+    This client handles the initialization of the Google GenAI service and provides
+    methods to generate text embeddings safely with retry logic.
+
+    Attributes:
+        model_name (str): The name of the embedding model to use (default: "text-embedding-004").
+    """
     def __init__(self):
         api_key = os.getenv("GEMINI_API_KEY")
         
@@ -23,7 +32,14 @@ class EmbeddingClient:
 
     def get_embedding(self, text: str) -> Optional[List[float]]:
         """
-        Generates embedding using the new google-genai SDK.
+        Generates an embedding vector for the given text using the Google GenAI SDK.
+
+        Args:
+            text (str): The input text to be embedded.
+
+        Returns:
+            Optional[List[float]]: A list of floating-point numbers representing the embedding,
+            or None if the text is empty or generation fails after retries.
         """
         if not text:
             return None
