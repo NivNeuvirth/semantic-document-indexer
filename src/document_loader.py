@@ -21,7 +21,7 @@ def _extract_from_pdf(file_path: Path) -> Optional[str]:
     try:
         reader = PdfReader(str(file_path))
         for page in reader.pages:
-            content = page.extract_text()
+            content = page.extract_text(extraction_mode="layout")
             if content:
                 text_parts.append(content)
         return "\n".join(text_parts)
