@@ -106,14 +106,14 @@ The project is designed to be run as a module. To index a document, you can run 
 Index a document using the default 'fixed' chunking strategy:
 
 ```bash
-python src/index_documents.py --file data/sample_document.pdf
+python src/index_documents.py --file data/sample.pdf
 ```
 
 ### Advanced Usage
 Specify a splitting strategy (`fixed`, `sentence`, or `paragraph`):
 
 ```bash
-python src/index_documents.py --file data/sample_document.docx --strategy paragraph
+python src/index_documents.py --file data/sample.docx --strategy paragraph
 ```
 
 ### Help
@@ -145,35 +145,21 @@ pytest -v
 
 ## Project Structure
 
-```mermaid
-graph TD
-    Root[semantic-document-indexer/]
-    Root --> Src[src/]
-    Root --> Data[data/]
-    Root --> Tests[tests/]
-    Root --> Env[.env]
-    Root --> Req[requirements.txt]
-
-    subgraph "src/"
-        Src --> Indexer[index_documents.py]
-        Src --> Loader[document_loader.py]
-        Src --> Splitter[text_splitter.py]
-        Src --> Embedder[embedding_client.py]
-        Src --> DB[database_manager.py]
-    end
-
-    subgraph "tests/"
-        Tests --> T_Indexer[test_index_documents.py]
-        Tests --> T_Loader[test_document_loader.py]
-        Tests --> T_Splitter[test_text_splitter.py]
-        Tests --> T_Embedder[test_embedding_client.py]
-        Tests --> T_DB[test_database_manager.py]
-    end
+```text
+├── src/
+│   ├── index_documents.py    # Main entry point: Orchestrates indexing workflow
+│   ├── document_loader.py    # Handles loading and cleaning of PDF/DOCX files
+│   ├── text_splitter.py      # Implements splitting strategies (fixed, sentence, paragraph)
+│   ├── embedding_client.py   # Google GenAI interface for generating embeddings
+│   └── database_manager.py   # Manages PostgreSQL connections and vector storage
+├── tests/                    # Unit and integration tests
+│   ├── test_index_documents.py
+│   └── ...
+├── data/                     # Directory for input documents
+│   ├── sample.docx
+│   └── sample.pdf
+├── requirements.txt          # Python dependencies
+├── .env                      # Environment variables (API keys, DB URL)
+├── .gitignore                # Git ignore rules
+└── README.md                 # Project documentation
 ```
-
-### Key Modules
--   **`src/document_loader.py`**: Handles loading and cleaning of raw document files.
--   **`src/text_splitter.py`**: Implements different strategies for splitting text into chunks.
--   **`src/embedding_client.py`**: Interface for the Google GenAI embedding service.
--   **`src/database_manager.py`**: Manages PostgreSQL connections and vector data insertion.
--   **`src/index_documents.py`**: Main entry point that orchestrates the entire indexing workflow.
