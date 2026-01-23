@@ -4,23 +4,34 @@ from unittest.mock import MagicMock, patch, call
 from database_manager import DatabaseManager
 import os
 
+"""
+Unit tests for the DatabaseManager class, covering connection, setup,
+deletion, and insertion logic using mocked PostgreSQL interactions.
+"""
+
 @pytest.fixture
 def mock_db_env():
+    """Sets a mock POSTGRES_URL environment variable for testing."""
     with patch.dict(os.environ, {"POSTGRES_URL": "postgresql://user:pass@localhost/db"}):
         yield
 
 def test_init_raises_without_url():
+    """Verifies that ValueError is raised if POSTGRES_URL is not set."""
     with patch.dict(os.environ, {}, clear=True):
         with pytest.raises(ValueError, match="Missing Configuration"):
             DatabaseManager()
 
-def test_get_connection(mock_db_env):
+@pytest.mark.usefixtures("mock_db_env")
+def test_get_connection():
+    """Checks that get_connection calls psycopg2.connect with the correct URL."""
     with patch("database_manager.psycopg2.connect") as mock_connect:
         db = DatabaseManager()
         db.get_connection()
         mock_connect.assert_called_once_with("postgresql://user:pass@localhost/db")
 
-def test_setup_database(mock_db_env):
+@pytest.mark.usefixtures("mock_db_env")
+def test_setup_database():
+    """Ensures setup_database executes the expected table creation SQL."""
     with patch("database_manager.psycopg2.connect") as mock_connect:
         mock_conn = mock_connect.return_value
         mock_cur = mock_conn.cursor.return_value.__enter__.return_value
@@ -36,7 +47,9 @@ def test_setup_database(mock_db_env):
         
         mock_conn.commit.assert_called_once()
 
-def test_delete_existing_chunks(mock_db_env):
+@pytest.mark.usefixtures("mock_db_env")
+def test_delete_existing_chunks():
+    """Verifies that delete_existing_chunks executes the correct DELETE SQL command."""
     with patch("database_manager.psycopg2.connect") as mock_connect:
         mock_conn = mock_connect.return_value
         mock_cur = mock_conn.cursor.return_value.__enter__.return_value
@@ -46,12 +59,14 @@ def test_delete_existing_chunks(mock_db_env):
         db.delete_existing_chunks("file.txt", "fixed")
         
         mock_cur.execute.assert_called_once()
-        args, kwargs = mock_cur.execute.call_args
+        args, _ = mock_cur.execute.call_args
         assert "DELETE FROM document_chunks" in args[0]
         assert args[1] == ("file.txt", "fixed")
         mock_conn.commit.assert_called_once()
 
-def test_insert_chunks(mock_db_env):
+@pytest.mark.usefixtures("mock_db_env")
+def test_insert_chunks():
+    """Tests that insert_chunks performs a delete followed by a bulk insert."""
     with patch("database_manager.psycopg2.connect") as mock_connect:
         mock_conn = mock_connect.return_value
         

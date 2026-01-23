@@ -3,13 +3,21 @@ from unittest.mock import MagicMock, patch
 from pathlib import Path
 from document_loader import load_and_clean_document
 
+"""
+Unit tests for the document_loader module, verifying PDF/DOCX extraction
+handling, error cases, and text cleaning logic.
+"""
+
 @pytest.fixture
 def mock_path_exists():
+    """Patches Path.exists() to always return True by default."""
     with patch("pathlib.Path.exists") as mock_exists:
         mock_exists.return_value = True
         yield mock_exists
 
-def test_load_and_clean_pdf(mock_path_exists):
+@pytest.mark.usefixtures("mock_path_exists")
+def test_load_and_clean_pdf():
+    """Tests successful extraction and cleaning of text from a PDF file."""
     with patch("document_loader.PdfReader") as MockPdfReader:
         # Setup mock behavior
         mock_reader = MockPdfReader.return_value
@@ -25,7 +33,9 @@ def test_load_and_clean_pdf(mock_path_exists):
         assert "Page 2 content." in content
         assert "\n" in content # Should join with newlines
 
-def test_load_and_clean_docx(mock_path_exists):
+@pytest.mark.usefixtures("mock_path_exists")
+def test_load_and_clean_docx():
+    """Tests successful extraction and cleaning of text from a DOCX file."""
     with patch("document_loader.Document") as MockDocument:
         # Setup mock behavior
         mock_doc = MockDocument.return_value
@@ -41,16 +51,21 @@ def test_load_and_clean_docx(mock_path_exists):
         assert "Paragraph 2." in content
 
 def test_file_not_found():
+    """Verifies that FileNotFoundError is raised when path.exists() returns False."""
     with patch("pathlib.Path.exists") as mock_exists:
         mock_exists.return_value = False
         with pytest.raises(FileNotFoundError):
             load_and_clean_document("nonexistent.pdf")
 
-def test_unsupported_format(mock_path_exists):
+@pytest.mark.usefixtures("mock_path_exists")
+def test_unsupported_format():
+    """Checks that ValueError is raised for unsupported file extensions (e.g., .png)."""
     with pytest.raises(ValueError, match="Unsupported format"):
         load_and_clean_document("image.png")
 
-def test_empty_parsed_content(mock_path_exists):
+@pytest.mark.usefixtures("mock_path_exists")
+def test_empty_parsed_content():
+    """Ensures RuntimeError is raised if the document parser returns None."""
     # Case where file exists and is valid format, but extraction returns nothing
     with patch("document_loader._extract_from_pdf") as mock_extract:
         mock_extract.return_value = None

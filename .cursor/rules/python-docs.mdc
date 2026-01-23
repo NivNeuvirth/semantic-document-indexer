@@ -6,3 +6,7 @@ globs: *.py
 
 - Always include PEP 257 compliant docstrings for all modules, classes, and functions.
 - Ensure documentation covers parameters, return values, and exceptions.
+- **Tests**:
+    - Include a module-level docstring describing the test file's purpose.
+    - Include a docstring for every test function describing the scenario and expected outcome.
+    - Fixtures must have docstrings explanation their purpose and set up.
