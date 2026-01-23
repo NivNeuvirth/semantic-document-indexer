@@ -9,15 +9,33 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 class DatabaseManager:
+    """
+    Manages PostgreSQL database interactions for storing and retrieving document chunks.
+    
+    Attributes:
+        db_url (str): The database connection URL retrieved from environment variables.
+    """
     def __init__(self):
         self.db_url = os.getenv("POSTGRES_URL")
         if not self.db_url:
             raise ValueError("❌ Missing Configuration: 'POSTGRES_URL' is not set in the .env file.")
 
     def get_connection(self):
+        """
+        Establishes and returns a new connection to the PostgreSQL database.
+
+        Returns:
+            psycopg2.extensions.connection: A psycopg2 connection object.
+        """
         return psycopg2.connect(self.db_url)
 
     def setup_database(self):
+        """
+        Initializes the database schema by creating the necessary table and indexes if they don't exist.
+        
+        Raises:
+            Exception: If database setup fails.
+        """
         conn = self.get_connection()
         try:
             with conn.cursor() as cur:
@@ -46,7 +64,14 @@ class DatabaseManager:
 
     def delete_existing_chunks(self, filename: str, strategy: str):
         """
-        Duplicate Prevention: מחיקת נתונים ישנים לפני הכנסת חדשים.
+        Deletes existing chunks for a specific file and splitting strategy to prevent duplicates.
+
+        Args:
+            filename (str): The name of the file to clean up.
+            strategy (str): The splitting strategy used (e.g., 'fixed', 'sentence').
+
+        Raises:
+            Exception: If the deletion operation fails.
         """
         conn = self.get_connection()
         try:
@@ -69,6 +94,21 @@ class DatabaseManager:
             conn.close()
 
     def insert_chunks(self, filename: str, strategy: str, chunks: List[str], embeddings: List[List[float]]):
+        """
+        Inserts new document chunks and their embeddings into the database.
+
+        This method first cleans up old records for the same file and strategy, 
+        then performs a bulk insert of the new data.
+
+        Args:
+            filename (str): The name of the source file.
+            strategy (str): The splitting strategy used.
+            chunks (List[str]): A list of text chunks to insert.
+            embeddings (List[List[float]]): A list of corresponding embedding vectors.
+
+        Raises:
+            Exception: If the insert operation fails.
+        """
         if not chunks:
             return
 

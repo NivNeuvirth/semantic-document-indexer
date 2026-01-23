@@ -14,6 +14,25 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 def process_document(file_path: str, strategy: str = 'fixed'):
+    """
+    Orchestrates the document indexing process: loading, splitting, embedding, and saving.
+
+    This function performs the following steps:
+    1. Initializes the database.
+    2. Loads and cleans the document text.
+    3. Splits the text into chunks using the specified strategy.
+    4. Generates embeddings for each chunk.
+    5. Saves valid chunks and embeddings to the PostgreSQL database.
+    6. Writes a debug file ('debug_chunks.txt') with chunking information.
+
+    Args:
+        file_path (str): The path to the document to process.
+        strategy (str): The text splitting strategy to use ('fixed', 'sentence', 'paragraph').
+                        Defaults to 'fixed'.
+
+    Returns:
+        list: A list of generated embeddings, or None/empty if process fails early.
+    """
     logger.info(f"🚀 Processing file: {file_path}")
 
     try:

@@ -9,8 +9,13 @@ logger = logging.getLogger(__name__)
 
 def _extract_from_pdf(file_path: Path) -> Optional[str]:
     """
-    Internal helper to read PDF.
-    Returns: extracted text (str) or None if extraction failed.
+    Extracts text content from a PDF file.
+
+    Args:
+        file_path (Path): The pathlib.Path object pointing to the PDF file.
+
+    Returns:
+        Optional[str]: The extracted text combined into a single string, or None if extraction fails.
     """
     text_parts = []
     try:
@@ -26,8 +31,13 @@ def _extract_from_pdf(file_path: Path) -> Optional[str]:
 
 def _extract_from_docx(file_path: Path) -> Optional[str]:
     """
-    Internal helper to read DOCX.
-    Returns: extracted text (str) or None if extraction failed.
+    Extracts text content from a DOCX file.
+
+    Args:
+        file_path (Path): The pathlib.Path object pointing to the DOCX file.
+
+    Returns:
+        Optional[str]: The extracted paragraphs joined by newlines, or None if extraction fails.
     """
     try:
         doc = Document(str(file_path))
@@ -37,18 +47,39 @@ def _extract_from_docx(file_path: Path) -> Optional[str]:
         return None
 
 def _clean_text(text: str) -> str:
-    """Normalizes whitespace."""
+    """
+    Normalizes whitespace in the given text.
+
+    Replaces multiple whitespace characters (including tabs) with a single space
+    and strips leading/trailing whitespace.
+
+    Args:
+        text (str): The input text to clean.
+
+    Returns:
+        str: The cleaned and normalized text.
+    """
     if not text:
         return ""
     return re.sub(r'[ \t]+', ' ', text).strip()
 
 def load_and_clean_document(file_path_str: str) -> str:
     """
-    Public API: Loads a file and returns clean text.
+    Loads a document from the filesystem and returns its cleaned text content.
+
+    This function supports PDF and DOCX formats. It handles file reading,
+    text extraction, and basic whitespace normalization.
+
+    Args:
+        file_path_str (str): The absolute or relative path to the document file.
+
+    Returns:
+        str: The extracted and cleaned text content of the document.
+
     Raises:
-        FileNotFoundError: If file doesn't exist.
-        ValueError: If format is unsupported.
-        RuntimeError: If parsing failed.
+        FileNotFoundError: If the specified file does not exist.
+        ValueError: If the file format (extension) is not supported.
+        RuntimeError: If text extraction fails (e.g., empty result from parser).
     """
     path = Path(file_path_str)
     

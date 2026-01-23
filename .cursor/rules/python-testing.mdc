@@ -1,0 +1,10 @@
+---
+description: Python Testing Standards
+globs: tests/**/*.py, *_test.py, test_*.py, **/*_test.py
+---
+# Python Testing Standards
+
+- Use `pytest` as the testing framework.
+- Mock external services (e.g., Google GenAI, Postgres) – strictly no network calls in unit tests.
+- Test file naming convention: `test_<module>.py`.
+- Structure: One test class per module (if using classes) or functions prefixed with `test_`.
