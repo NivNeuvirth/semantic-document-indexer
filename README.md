@@ -9,7 +9,7 @@ The Semantic Document Indexer automates the process of preparing unstructured te
 2.  **Cleaning**: Preprocesses text to remove noise and standardize formatting.
 3.  **Chunking**: Splits text into manageable segments using configurable strategies (Fixed-size, Sentence-based, Paragraph-based).
 4.  **Embedding**: Generates vector embeddings for each chunk using Google's Gemini `text-embedding-004` model.
-5.  **Indexing**: Stores proper chunks and their corresponding embeddings into a PostgreSQL database for retrieval.
+5.  **Indexing**: Stores processed chunks and their corresponding embeddings into a PostgreSQL database for retrieval.
 
 ## Prerequisites
 
