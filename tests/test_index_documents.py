@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock, patch, mock_open
-from index_documents import process_document
+from src.index_documents import process_document
 
 """
 Integration tests for the process_document workflow, mocking all external
@@ -10,10 +10,10 @@ dependencies (DB, loading, embedding) to verify orchestration logic.
 @pytest.fixture
 def mock_dependencies():
     """Patches all external dependencies for process_document and yields them."""
-    with patch("index_documents.db_manager") as mock_db, \
-         patch("index_documents.load_and_clean_document") as mock_load, \
-         patch("index_documents.embedding_client") as mock_embed, \
-         patch("index_documents.split_by_fixed_size") as mock_split:
+    with patch("src.index_documents.db_manager") as mock_db, \
+         patch("src.index_documents.load_and_clean_document") as mock_load, \
+         patch("src.index_documents.embedding_client") as mock_embed, \
+         patch("src.index_documents.split_by_fixed_size") as mock_split:
          
         yield mock_db, mock_load, mock_embed, mock_split
 
